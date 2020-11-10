@@ -1,0 +1,7 @@
+pymongo[srv]
+twint
+pandas
+flask
+flask-restful
+python-dotenv
+
