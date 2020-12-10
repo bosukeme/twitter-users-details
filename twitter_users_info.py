@@ -1,11 +1,12 @@
 import pandas as pd
+import json
 import twint
 from pymongo import MongoClient
 from datetime import datetime
 from dotenv import load_dotenv
 import os
 from os.path import join, dirname
-
+from time import sleep
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -22,9 +23,10 @@ def get_handles(txt_file):
     with open(txt_file) as f:
         usernames = f.readlines()
     usernames = [x.strip() for x in usernames]
-    print("len: ", len(usernames[:1510]) )
-    return usernames[:1510]
-
+    usernames = [json.loads(x) for x in usernames]
+    usernames = [x['username'] for x in usernames]
+    print("len: ", len(usernames) )
+    return usernames
 
 def search_db(usernames):
     twitter_user_collection = db.twitter_user_collection
@@ -43,8 +45,7 @@ def search_db(usernames):
     
     
 def process_usernames(new_usernames):
-    
-    #usernames = ['FHEEFS', 'firstround', 'Doc_D3mz', 'Gaohmee']
+
     for username in new_usernames:
         try:
             user_name_df = pd.DataFrame()
@@ -77,9 +78,9 @@ def process_usernames(new_usernames):
             user_name_df['Twitter_Name'] = user_name_list  
             user_name_df['Twitter_Bio'] = user_bio_list  
             user_name_df['Twitter_Profile_Image'] = user_profile_image_list
-            #print(user_name_df)
+            print(user_name_df)
             save_to_mongodb(user_name_df)
-           
+            sleep(60)
 
         except:
             user_name_df = pd.DataFrame()
@@ -101,8 +102,9 @@ def process_usernames(new_usernames):
             user_name_df['Twitter_Name'] = user_name_list  
             user_name_df['Twitter_Bio'] = user_bio_list  
             user_name_df['Twitter_Profile_Image'] = user_profile_image_list
-            #print(user_name_df)
+            print(user_name_df)
             save_to_mongodb(user_name_df)
+            sleep(200)
     
 
 def save_to_mongodb(user_name_df):
@@ -125,10 +127,11 @@ def save_to_mongodb(user_name_df):
 
 def run_all():
     start = datetime.now()
-    usernames = get_handles('verified_handles.txt')
+    usernames = get_handles('server_verified.txt')
     new_usernames = search_db(usernames)
     user_name_df = process_usernames(new_usernames)
     
     end = datetime.now()
     print("It took :", end - start)
 
+#run_all()
